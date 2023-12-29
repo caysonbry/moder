@@ -1,0 +1,36 @@
+from telegram.ext import Updater, CommandHandler
+
+# Токен вашего бота Telegram
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+
+# Функция команды /start
+def start(update, context):
+    update.message.reply_text('Привет! Я бот модерации. Чтобы узнать список команд, используйте /help.')
+
+# Функция команды /help
+def help_command(update, context):
+    update.message.reply_text('Список доступных команд:\n/help - показать список команд\n/kick - исключить участника из чата')
+
+# Функция команды /kick (для исключения участника из чата)
+def kick_user(update, context):
+    if 'admin' in [role.lower() for role in context.bot.get_chat_member(update.message.chat_id, update.message.from_user.id).get_member().roles]:
+        user_to_kick = update.message.reply_to_message.from_user
+        context.bot.kick_chat_member(update.message.chat_id, user_to_kick.id)
+        update.message.reply_text(f'{user_to_kick.first_name} исключен из чата.')
+    else:
+        update.message.reply_text('У вас нет прав для этой команды.')
+
+def main():
+    updater = Updater(TOKEN, use_context=True)
+    dispatcher = updater.dispatcher
+
+    # Обработчики команд
+    dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(CommandHandler('help', help_command))
+    dispatcher.add_handler(CommandHandler('kick', kick_user))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
